@@ -1,7 +1,18 @@
 const { remote, ipcRenderer } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { TweenMax } = require('gsap');
 
+
+function getImage(src, isHidden) {
+	const img = document.createElement('img');
+	// console.log(src);
+	img.style.position = 'absolute';
+	img.style.top = '0';
+	img.style.left = '0';
+	img.src = src;
+	return img;
+}
 
 function loadFiles(dir) {
 	fs.readdir(dir, (err, files) => {
@@ -12,12 +23,15 @@ function loadFiles(dir) {
 
 
 		const container = document.getElementById('main');
-		const img = document.createElement('img');
-		const src = dir + '/' + images.pop();
-		// console.log(src);
-		img.src = src;
+		const img = getImage(dir + '/' + images.pop(), false);
 		container.appendChild(img);
 
+
+		setTimeout(() => {
+			const img2 = getImage(dir + '/' + images.pop(), true);
+			container.insertBefore(img2, container.childNodes[0]);
+			TweenMax.to(img, 0.6, {opacity: 0});
+		}, 5000);
 		// const canvas = document.getElementById("main");
 		// const ctx = canvas.getContext("2d");
 		// img.addEventListener('load', () => {
