@@ -24,7 +24,7 @@ function swap() {
 		container.insertBefore(img, old);
 		const onready = () => {
 			img.removeEventListener('load', onready);
-			TweenMax.to(old, 0.6, {
+			TweenMax.to(old, 2, {
 				opacity: 0, 
 				onComplete: () => {
 					container.removeChild(old);
