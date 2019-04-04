@@ -22,11 +22,18 @@ function swap() {
 		const old = container.childNodes[0];
 		const img = getImage(images.pop());
 		container.insertBefore(img, old);
-		TweenMax.to(old, 0.6, {opacity: 0, onComplete: () => {
-			container.removeChild(old);
-			swap();
-		}
-		});
+		const onready = () => {
+			img.removeEventListener('load', onready);
+			TweenMax.to(old, 0.6, {
+				opacity: 0, 
+				onComplete: () => {
+					container.removeChild(old);
+					swap();
+				}
+			});
+		};
+		img.addEventListener('load', onready);
+		
 	}, 5000);
 }
 
