@@ -38,12 +38,12 @@ wsServer.on('request', function(request) {
   // This is the most important callback for us, we'll handle
   // all messages from users here.
   connection.on('message', function(message) {
-	  console.log('msg');
+	console.log('msg');
 
-    if (message.type === 'utf8') {
-	  // process WebSocket message
-	  connection.send('ok manne');
-    }
+	if (message.type === 'utf8') {
+		// process WebSocket message
+		connection.send('ok manne');
+	}
   });
 
   setTimeout(() => {
