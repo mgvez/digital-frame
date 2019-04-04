@@ -4,7 +4,7 @@ const fs = require('fs');
 const { TweenMax } = require('gsap');
 
 
-function getImage(src, isHidden) {
+function getImage(src) {
 	const img = document.createElement('img');
 	// console.log(src);
 	img.style.position = 'absolute';
@@ -14,24 +14,34 @@ function getImage(src, isHidden) {
 	return img;
 }
 
+let container;
+let images;
+function swap() {
+	if (!images.length) return;
+	setTimeout(() => {
+		const old = container.childNodes[0];
+		const img = getImage(images.pop());
+		container.insertBefore(img, old);
+		TweenMax.to(old, 0.6, {opacity: 0, onComplete: () => {
+			container.removeChild(old);
+			swap();
+		}
+		});
+	}, 5000);
+}
+
 function loadFiles(dir) {
 	fs.readdir(dir, (err, files) => {
-		const images = files.filter(file => {
+		images = files.filter(file => {
 			const ext = path.extname(file).toLowerCase();
 			return (ext === '.jpg' || ext === '.png');
-		});
+		}).map(f => dir + '/' + f);
 
 
-		const container = document.getElementById('main');
-		const img = getImage(dir + '/' + images.pop(), false);
+		container = document.getElementById('main');
+		const img = getImage(images.pop(), false);
 		container.appendChild(img);
-
-
-		setTimeout(() => {
-			const img2 = getImage(dir + '/' + images.pop(), true);
-			container.insertBefore(img2, container.childNodes[0]);
-			TweenMax.to(img, 0.6, {opacity: 0});
-		}, 5000);
+		swap();
 		// const canvas = document.getElementById("main");
 		// const ctx = canvas.getContext("2d");
 		// img.addEventListener('load', () => {
