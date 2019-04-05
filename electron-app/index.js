@@ -11,13 +11,13 @@ function createWindow () {
 		height: 800,
 		autoHideMenuBar: true,
 		alwaysOnTop: true,
-		fullscreen: true,
+		// fullscreen: true,
 		frame: false,
 	})
 
 	win.loadFile('index.html');
 
-	win.webContents.openDevTools();
+	// win.webContents.openDevTools();
 
 
 	win.webContents.on('dom-ready', () => {
