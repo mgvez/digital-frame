@@ -9,19 +9,10 @@ const canvas = document.createElement('canvas');
 const ctx = canvas.getContext("2d");
 
 let images;
-// let currentIndex;
-let curImg;
-let nextImg;
-let coordinates;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
-	coordinates = refreshCoordinates();
-	if (curImg) {
-		const coords = getDrawCoordinates(curImg);
-		ctx.drawImage(curImg, ...coords);
-	}
 });
 
 function mountPortraitImages(src, coords, idx, onLoad) {
@@ -50,6 +41,7 @@ function mountPortraitImages(src, coords, idx, onLoad) {
 		}
 	}
 
+	//place the images evenly on the canvas's width
 	const margin = remain / all.length;
 	all.reduce((curX, im, i) => {
 		im.coords.x = curX;
@@ -60,10 +52,9 @@ function mountPortraitImages(src, coords, idx, onLoad) {
 		return getSingleImage(imDef.src);
 	});
 
-	console.log(canvas.width, margin, remain);
-
+	// console.log(canvas.width, margin, remain);
+	//load all images
 	return Promise.all(allLoaded).then((res) => {
-		console.log(res);
 		const imCanvas = document.createElement('canvas');
 		imCanvas.width = canvas.width;
 		imCanvas.height = canvas.height;
@@ -71,15 +62,14 @@ function mountPortraitImages(src, coords, idx, onLoad) {
 		imCtx.fillStyle = 'black';
 		imCtx.globalAlpha = 1;
 		imCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-		res.reduce((ctx, im, i) => {
+		//draw each image in its position.
+		return res.reduce((ctx, im, i) => {
 			ctx.drawImage(im, ...(Object.values(all[i].coords)));
 			return ctx;
-		}, imCtx)
-		// .getImageData(0, 0, imCanvas.width, imCanvas.height);
-		const resImg = new Image();
-		resImg.src = imCanvas.toDataURL();
-		return resImg;
+		}, imCtx).getImageData(0, 0, imCanvas.width, imCanvas.height);
+		// const resImg = new Image();
+		// resImg.src = imCanvas.toDataURL();
+		// return resImg;
 	});
 
 	// console.log(all);
@@ -94,7 +84,16 @@ function getSlideshowPanel(idx, onLoad) {
 	//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
 	if (coords.w <= (canvas.width / 2)) return mountPortraitImages(src, coords, idx, onLoad);
 
-	return getSingleImage(src, onLoad);
+	const im = getSingleImage(src, onLoad);
+	const imCanvas = document.createElement('canvas');
+	imCanvas.width = canvas.width;
+	imCanvas.height = canvas.height;
+	const imCtx = canvas.getContext("2d");
+	imCtx.fillStyle = 'black';
+	imCtx.globalAlpha = 1;
+	imCtx.fillRect(0, 0, canvas.width, canvas.height);
+	imCtx.drawImage(im, ...(Object.values(coords)));
+	return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
 }
 
 function getSingleImage(src) {
@@ -109,9 +108,6 @@ function getSingleImage(src) {
 	});
 }
 
-function refreshCoordinates() {
-	return [curImg, nextImg].map(getDrawCoordinates);
-}
 
 function getDrawCoordinates(img) {
 	if (!img) return null;
@@ -154,31 +150,22 @@ function getDrawCoordinates(img) {
 }
 
 
-function draw() {
-	coordinates = refreshCoordinates();
+function draw(imgData) {
 
 	//no fillrect if new image covers old one
-	const covers = coordinates[0] && (coordinates[1].x <= coordinates[0].x && coordinates[1].y <= coordinates[0].y);
 	const props = { alpha: 0 };
 
 	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
 		onUpdate: () => {
-			ctx.globalAlpha = props.alpha;
-			if(!covers) {
-				ctx.fillStyle = 'black';
-				ctx.globalAlpha = props.alpha / 2;
-				ctx.fillRect(0, 0, canvas.width, canvas.height);
-				// ctx.drawImage(curImg, ...coordinates[0]);
-			}
 			// console.log(props.alpha);
 			ctx.globalAlpha = props.alpha;
 			ctx.drawImage(nextImg, ...(Object.values(coordinates[1])));
+			ctx.putImageData(imgData, 0, 0, canvas.width, canvas.height);
 		},
 		onComplete: () => {
 			ctx.globalAlpha = 1;
-			ctx.drawImage(nextImg, ...(Object.values(coordinates[1])));
-			curImg = nextImg;
+			ctx.putImageData(imgData, 0, 0, canvas.width, canvas.height);
 			setSwap();
 		},
 	});
@@ -188,12 +175,9 @@ function draw() {
 function swap(atInit) {
 
 	const currentIndex = atInit ? 3 : Math.floor(Math.random() * (images.length));
-	console.log(currentIndex);
+	// console.log(currentIndex);
 	// nextImg = getSlideshowPanel(currentIndex, draw);
-	getSlideshowPanel(currentIndex).then((img) => {
-		nextImg = img;
-		draw();
-	});
+	getSlideshowPanel(currentIndex).then(draw);
 }
 
 function setSwap() {
