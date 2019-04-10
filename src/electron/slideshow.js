@@ -58,18 +58,18 @@ function mountPortraitImages(src, coords, idx, onLoad) {
 		const imCanvas = document.createElement('canvas');
 		imCanvas.width = canvas.width;
 		imCanvas.height = canvas.height;
-		const imCtx = canvas.getContext("2d");
+		const imCtx = imCanvas.getContext("2d");
 		imCtx.fillStyle = 'black';
 		imCtx.globalAlpha = 1;
 		imCtx.fillRect(0, 0, canvas.width, canvas.height);
 		//draw each image in its position.
-		return res.reduce((ctx, im, i) => {
-			ctx.drawImage(im, ...(Object.values(all[i].coords)));
-			return ctx;
-		}, imCtx).getImageData(0, 0, imCanvas.width, imCanvas.height);
-		// const resImg = new Image();
-		// resImg.src = imCanvas.toDataURL();
-		// return resImg;
+		res.reduce((carryCtx, im, i) => {
+			carryCtx.drawImage(im, ...(Object.values(all[i].coords)));
+			return carryCtx;
+		}, imCtx);//.getImageData(0, 0, imCanvas.width, imCanvas.height);
+		const resImg = new Image();
+		resImg.src = imCanvas.toDataURL();
+		return resImg;
 	});
 
 	// console.log(all);
@@ -84,16 +84,20 @@ function getSlideshowPanel(idx, onLoad) {
 	//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
 	if (coords.w <= (canvas.width / 2)) return mountPortraitImages(src, coords, idx, onLoad);
 
-	const im = getSingleImage(src, onLoad);
-	const imCanvas = document.createElement('canvas');
-	imCanvas.width = canvas.width;
-	imCanvas.height = canvas.height;
-	const imCtx = canvas.getContext("2d");
-	imCtx.fillStyle = 'black';
-	imCtx.globalAlpha = 1;
-	imCtx.fillRect(0, 0, canvas.width, canvas.height);
-	imCtx.drawImage(im, ...(Object.values(coords)));
-	return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
+	return getSingleImage(src, onLoad).then((im) => {
+		const imCanvas = document.createElement('canvas');
+		imCanvas.width = canvas.width;
+		imCanvas.height = canvas.height;
+		const imCtx = imCanvas.getContext("2d");
+		imCtx.fillStyle = 'black';
+		imCtx.globalAlpha = 1;
+		imCtx.fillRect(0, 0, canvas.width, canvas.height);
+		imCtx.drawImage(im, ...(Object.values(coords)));
+		// return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
+		const resImg = new Image();
+		resImg.src = imCanvas.toDataURL();
+		return resImg;
+	});
 }
 
 function getSingleImage(src) {
@@ -150,7 +154,7 @@ function getDrawCoordinates(img) {
 }
 
 
-function draw(imgData) {
+function draw(img) {
 
 	//no fillrect if new image covers old one
 	const props = { alpha: 0 };
@@ -158,14 +162,15 @@ function draw(imgData) {
 	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
 		onUpdate: () => {
-			// console.log(props.alpha);
+			console.log(props.alpha);
 			ctx.globalAlpha = props.alpha;
-			ctx.drawImage(nextImg, ...(Object.values(coordinates[1])));
-			ctx.putImageData(imgData, 0, 0, canvas.width, canvas.height);
+			ctx.drawImage(img, 0, 0);
+			// ctx.putImageData(imgData, 0, 0);
 		},
 		onComplete: () => {
 			ctx.globalAlpha = 1;
-			ctx.putImageData(imgData, 0, 0, canvas.width, canvas.height);
+			ctx.drawImage(img, 0, 0);
+			// ctx.putImageData(imgData, 0, 0);
 			setSwap();
 		},
 	});
@@ -212,6 +217,7 @@ ipcRenderer.on('load', function(event, arg) {
 	container.appendChild(canvas);
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
+	// console.log(arg);
 	loadFiles(arg + IMAGE_ROOT);
 });
 
