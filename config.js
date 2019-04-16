@@ -9,7 +9,7 @@ module.exports = {
 
 	HTTP_PORT: '3333',
 	IP_WHITELIST: false,
-	IMAGE_ROOT: '/../images',
+	IMAGE_ROOT: '/../images/digital-frame',
 
 	//from 0 (sunday) to saturday (6)
 	POWER_TIME: [

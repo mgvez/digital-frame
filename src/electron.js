@@ -5,13 +5,13 @@ const path = require('path');
 
 let win;
 const isDev = process.argv.includes('dev');
-
+const isConsole = process.argv.includes('console');
 module.exports = function(server) {
 	function createWindow () {
 		console.log('creating electron window');
 		win = new BrowserWindow({ 
-			width: 1600,
-			height: 600,
+			width: 3000,
+			height: 2000,
 			autoHideMenuBar: true,
 			alwaysOnTop: !isDev,
 			fullscreen: !isDev,
@@ -20,7 +20,7 @@ module.exports = function(server) {
 	
 		win.loadFile('./src/electron/index.html');
 	
-		if (isDev) {
+		if (isDev || isConsole) {
 			win.webContents.openDevTools();
 		}
 	

@@ -17,6 +17,7 @@ window.addEventListener('resize', () => {
 
 function mountPortraitImages(src, coords, idx, onLoad) {
 	let remain = canvas.width - coords.w;
+	console.log('mount portrait', remain, coords.w);
 	const all = [ {
 		src,
 		coords,
@@ -24,6 +25,7 @@ function mountPortraitImages(src, coords, idx, onLoad) {
 	for (let i = 0; i < 11; i++) {
 		//no point in attempting to find an image that fits a width smaller than the original image
 		if (remain < coords.w) break;
+		console.log(remain, coords.w);
 		const candidateIdx = idx - 5 + i;
 		if (candidateIdx === idx) continue;
 		if (candidateIdx < 0 || candidateIdx >= images.length) continue;
@@ -80,9 +82,9 @@ function getSlideshowPanel(idx, onLoad) {
 	const src = images[idx];
 	const sz = sizeOf(src);
 	const coords = getDrawCoordinates(sz);
-	// console.log(coords.w, canvas.width);
+	console.log(coords.w, canvas.width);
 	//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
-	if (coords.w <= (canvas.width / 2)) return mountPortraitImages(src, coords, idx, onLoad);
+	if (coords.w < canvas.width) return mountPortraitImages(src, coords, idx, onLoad);
 
 	return getSingleImage(src, onLoad).then((im) => {
 		const imCanvas = document.createElement('canvas');
@@ -145,10 +147,10 @@ function getDrawCoordinates(img) {
 	};
 
 	//if image is exactly or very near frame size, don't resize it.
-	if (Math.abs(imW - cW) > (cW * 0.02) && Math.abs(imH - cH) > (cH * 0.02)) {
+	//if (Math.abs(imW - cW) > (cW * 0.02) && Math.abs(imH - cH) > (cH * 0.02)) {
 		res.w = rW;
 		res.h = rH;
-	}
+	//}
 
 	return res;
 }
@@ -162,7 +164,7 @@ function draw(img) {
 	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
 		onUpdate: () => {
-			console.log(props.alpha);
+			//console.log(props.alpha);
 			ctx.globalAlpha = props.alpha;
 			ctx.drawImage(img, 0, 0);
 			// ctx.putImageData(imgData, 0, 0);
