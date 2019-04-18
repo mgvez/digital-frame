@@ -15,6 +15,7 @@
     "electron-log": "^3.0.5",
     "express": "^4.16.4",
     "express-ipfilter": "^0.3.1",
+    "get-orientation": "^1.1.0",
     "gsap": "^2.1.2",
     "helmet": "^3.16.0",
     "image-size": "^0.7.3",

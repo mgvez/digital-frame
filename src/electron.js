@@ -10,8 +10,8 @@ module.exports = function(server) {
 	function createWindow () {
 		console.log('creating electron window');
 		win = new BrowserWindow({ 
-			width: 3000,
-			height: 2000,
+			width: 500,
+			height: 800,
 			autoHideMenuBar: true,
 			alwaysOnTop: !isDev,
 			fullscreen: !isDev,

@@ -1,159 +1,23 @@
 const { remote, ipcRenderer } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const sizeOf = require('image-size');
 const { TweenMax, Expo } = require('gsap');
-const { IMAGE_ROOT, FRAME_WIDTH, FRAME_HEIGHT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION } = require(__dirname + '/../../config.js');
+const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_SIZE } = require(__dirname + '/../../config.js');
+const getSlideshowPanel = require(__dirname + '/SlideshowPanel.js');
 
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext("2d");
 
 let images;
+let remain;
+let history;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 });
 
-function mountPortraitImages(src, coords, idx, onLoad) {
-	let remain = canvas.width - coords.w;
-	console.log('mount portrait', remain, coords.w);
-	const all = [ {
-		src,
-		coords,
-	}];
-	for (let i = 0; i < 11; i++) {
-		//no point in attempting to find an image that fits a width smaller than the original image
-		if (remain < coords.w) break;
-		console.log(remain, coords.w);
-		const candidateIdx = idx - 5 + i;
-		if (candidateIdx === idx) continue;
-		if (candidateIdx < 0 || candidateIdx >= images.length) continue;
-		const candidateSrc = images[candidateIdx];
-		if (candidateSrc) {
-			const candidateCoord = getDrawCoordinates(sizeOf(candidateSrc));
-			//found an image that fits
-			if (candidateCoord.w < remain) {
-				remain -= candidateCoord.w;
-				all.push({
-					src: candidateSrc,
-					coords: candidateCoord,
-				});
-			}
-		}
-	}
 
-	//place the images evenly on the canvas's width
-	const margin = remain / all.length;
-	all.reduce((curX, im, i) => {
-		im.coords.x = curX;
-		return curX + margin + im.coords.w;
-	}, margin / 2);
-
-	const allLoaded = all.map((imDef) => {
-		return getSingleImage(imDef.src);
-	});
-
-	// console.log(canvas.width, margin, remain);
-	//load all images
-	return Promise.all(allLoaded).then((res) => {
-		const imCanvas = document.createElement('canvas');
-		imCanvas.width = canvas.width;
-		imCanvas.height = canvas.height;
-		const imCtx = imCanvas.getContext("2d");
-		imCtx.fillStyle = 'black';
-		imCtx.globalAlpha = 1;
-		imCtx.fillRect(0, 0, canvas.width, canvas.height);
-		//draw each image in its position.
-		res.reduce((carryCtx, im, i) => {
-			carryCtx.drawImage(im, ...(Object.values(all[i].coords)));
-			return carryCtx;
-		}, imCtx);//.getImageData(0, 0, imCanvas.width, imCanvas.height);
-		const resImg = new Image();
-		resImg.src = imCanvas.toDataURL();
-		return resImg;
-	});
-
-	// console.log(all);
-}
-
-function getSlideshowPanel(idx, onLoad) {
-
-	const src = images[idx];
-	const sz = sizeOf(src);
-	const coords = getDrawCoordinates(sz);
-	console.log(coords.w, canvas.width);
-	//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
-	if (coords.w < canvas.width) return mountPortraitImages(src, coords, idx, onLoad);
-
-	return getSingleImage(src, onLoad).then((im) => {
-		const imCanvas = document.createElement('canvas');
-		imCanvas.width = canvas.width;
-		imCanvas.height = canvas.height;
-		const imCtx = imCanvas.getContext("2d");
-		imCtx.fillStyle = 'black';
-		imCtx.globalAlpha = 1;
-		imCtx.fillRect(0, 0, canvas.width, canvas.height);
-		imCtx.drawImage(im, ...(Object.values(coords)));
-		// return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
-		const resImg = new Image();
-		resImg.src = imCanvas.toDataURL();
-		return resImg;
-	});
-}
-
-function getSingleImage(src) {
-	return new Promise((resolve) => {
-		const img = document.createElement('img');
-		const onLoadUnload = () => {
-			img.removeEventListener('load', onLoadUnload);
-			resolve(img);
-		};
-		img.addEventListener('load', onLoadUnload);
-		img.src = src;
-	});
-}
-
-
-function getDrawCoordinates(img) {
-	if (!img) return null;
-	const imW = img.width;
-	const imH = img.height;
-	const cW = canvas.width;
-	const cH = canvas.height;
-	const imR = imW / imH;
-	const cR = cW / cH;
-	let rW = cW;
-	let rH = cH;
-	let x = 0;
-	let y = 0;
-
-	if(imR < cR) {
-		//portrait
-		rH = cH;
-		rW = imW * (rH / imH);
-		x = (cW - rW) / 2;
-		y = 0;
-	} else if(imR > cR) {
-		//landscape
-		rW = cW;
-		rH = imH * (rW / imW);
-		x = 0;
-		y = (cH - rH) / 2;
-	}
-	const res = {
-		x,
-		y,
-	};
-
-	//if image is exactly or very near frame size, don't resize it.
-	//if (Math.abs(imW - cW) > (cW * 0.02) && Math.abs(imH - cH) > (cH * 0.02)) {
-		res.w = rW;
-		res.h = rH;
-	//}
-
-	return res;
-}
 
 
 function draw(img) {
@@ -179,12 +43,34 @@ function draw(img) {
 
 };
 
-function swap(atInit) {
+function swap() {
 
-	const currentIndex = atInit ? 3 : Math.floor(Math.random() * (images.length));
+	//finished seeing all the images. Reset
+	if (remain.length === 0) {
+		remain = resetRemaining(images.length);
+	}
+
 	// console.log(currentIndex);
 	// nextImg = getSlideshowPanel(currentIndex, draw);
-	getSlideshowPanel(currentIndex).then(draw);
+	getSlideshowPanel(remain, images).then((res) => {
+		// console.log(res.index);
+		//remove displayed images from available images
+		res.index.forEach(imgIndex => {
+			const remainIndex = remain.indexOf(imgIndex);
+			if (remainIndex > -1) {
+				remain.splice(remainIndex, 1);
+			}
+		});
+		//adds displayed images to history
+		history.unshift(res.index);
+
+		//make sure history is no longer than x length
+		if (history.length > HISTORY_SIZE) history.length = HISTORY_SIZE;
+
+		// console.log(remain);
+		// console.log(history);
+		draw(res.img);
+	});
 }
 
 function setSwap() {
@@ -201,7 +87,12 @@ function setSwap() {
 // 	}
 // }
 
+function resetRemaining(n) {
+	return Array.apply(null, {length: n}).map(Number.call, Number);
+}
+
 function loadFiles(dir) {
+	// console.log(dir);
 	fs.readdir(dir, (err, files) => {
 		images = files.filter(file => {
 			const ext = path.extname(file).toLowerCase();
@@ -210,7 +101,10 @@ function loadFiles(dir) {
 
 		// shuffle(images);
 
-		swap(true);
+		remain = resetRemaining(images.length);
+		history = [];
+
+		swap();
 	});
 }
 

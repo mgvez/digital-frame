@@ -7,6 +7,8 @@ module.exports = {
 	SLIDESHOW_DURATION: 2,//seconds
 	SLIDESHOW_TRANSITION_DURATION: 3,//seconds
 
+	HISTORY_SIZE: 50,
+
 	HTTP_PORT: '3333',
 	IP_WHITELIST: false,
 	IMAGE_ROOT: '/../images/digital-frame',
