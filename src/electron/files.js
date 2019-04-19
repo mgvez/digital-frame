@@ -15,7 +15,6 @@ function loadFiles(rootPath, dir = '') {
 				const ext = path.extname(file).toLowerCase();
 				return (ext === '.jpg' || ext === '.png');
 			});
-			// console.log(images);
 
 			//get all folders
 			const subdirectories = files.map((subDir) => {
@@ -24,15 +23,11 @@ function loadFiles(rootPath, dir = '') {
 				if (ext) return false;
 				return loadFiles(rootPath, subDir);
 			}).filter(Boolean);
-			// console.log(allStat);
 
 			Promise.all(subdirectories).then(r => {
-				const allFiles = r.filter(Boolean).reduce((all, sub) => {
-					console.log(sub);
+				resolve(r.filter(Boolean).reduce((all, sub) => {
 					return all.concat(sub);
-				}, images);
-				// console.log(subfolderFiles);
-				resolve(allFiles);
+				}, images));
 			}).catch(e => {
 				console.log(e);
 			});

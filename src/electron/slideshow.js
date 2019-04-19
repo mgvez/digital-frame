@@ -88,7 +88,6 @@ function resetRemaining(n) {
 function loadDirectory(dir) {
 	currentPath = rootPath + dir;
 	loadFiles(currentPath).then(loadedImages => {
-		console.log(loadedImages);
 		images = loadedImages;
 		remain = resetRemaining(images.length);
 		history = [];
