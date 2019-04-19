@@ -1,0 +1,7 @@
+{
+  "apps" : [{
+    "name"        : "DFrame",
+    "script"      : "/home/dframe/digital-frame/dframe.sh",
+    "watch"       : ["/home/dframe/digital-frame/config.js"]
+  }]
+}
