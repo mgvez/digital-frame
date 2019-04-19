@@ -7,11 +7,22 @@ let win;
 const isDev = process.argv.includes('dev');
 const isConsole = process.argv.includes('console');
 module.exports = function(server) {
+
+	const stop = () => {
+		if (win) win.webContents.send('message', 'stop');
+		win.close();
+	};
+
+	const start = () => {
+		createWindow();
+		if (win) win.webContents.send('message', 'start');
+	};
+
 	function createWindow () {
 		console.log('creating electron window');
 		win = new BrowserWindow({ 
-			width: 500,
-			height: 800,
+			width: 1200,
+			height: 1000,
 			autoHideMenuBar: true,
 			alwaysOnTop: !isDev,
 			fullscreen: !isDev,
@@ -28,9 +39,18 @@ module.exports = function(server) {
 			win.webContents.send('load', app.getAppPath());
 		});
 	
-		server.onMessage = (message) => {
-			win.webContents.send('message', message);
-		};
+		server.setMessageCallback((message) => {
+			switch (message) {
+				case 'start':
+					start();
+					break;
+				case 'stop':
+					stop();
+					break;
+				default:
+					win.webContents.send('message', message);
+			};
+		});
 	
 		win.on('closed', () => {
 			win = null;
@@ -40,7 +60,7 @@ module.exports = function(server) {
 	app.on('ready', createWindow)
 	
 	app.on('window-all-closed', () => {
-		app.quit();
+		// app.quit();
 	});
 	
 	app.on('activate', () => {
@@ -49,12 +69,8 @@ module.exports = function(server) {
 		}
 	});
 
-	this.stop = () => {
-		win.webContents.send('message', 'stop');
-	}
+	this.stop = stop;
 	
-	this.start = () => {
-		win.webContents.send('message', 'start');
-	}
+	this.start = start;
 
 }

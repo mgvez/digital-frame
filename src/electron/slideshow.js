@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { TweenMax, Expo } = require('gsap');
 const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_SIZE } = require(__dirname + '/../../config.js');
+const { loadFiles } = require(__dirname + '/files.js');
 const getSlideshowPanel = require(__dirname + '/SlideshowPanel.js');
 
 const canvas = document.createElement('canvas');
@@ -11,13 +12,13 @@ const ctx = canvas.getContext("2d");
 let images;
 let remain;
 let history;
+let rootPath;
+let currentPath;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 });
-
-
 
 
 function draw(img) {
@@ -52,7 +53,9 @@ function swap() {
 
 	// console.log(currentIndex);
 	// nextImg = getSlideshowPanel(currentIndex, draw);
-	getSlideshowPanel(remain, images).then((res) => {
+	// console.profile('get image');
+	getSlideshowPanel(currentPath, remain, images).then((res) => {
+		// console.profileEnd();
 		// console.log(res.index);
 		//remove displayed images from available images
 		res.index.forEach(imgIndex => {
@@ -78,32 +81,17 @@ function setSwap() {
 	setTimeout(swap, SLIDESHOW_DURATION * 1000);
 }
 
-// function shuffle(array) {
-// 	for (let i = array.length - 1; i > 0; i--) {
-// 		const j = Math.floor(Math.random() * (i + 1));
-// 		const temp = array[i];
-// 		array[i] = array[j];
-// 		array[j] = temp;
-// 	}
-// }
-
 function resetRemaining(n) {
 	return Array.apply(null, {length: n}).map(Number.call, Number);
 }
 
-function loadFiles(dir) {
-	// console.log(dir);
-	fs.readdir(dir, (err, files) => {
-		images = files.filter(file => {
-			const ext = path.extname(file).toLowerCase();
-			return (ext === '.jpg' || ext === '.png');
-		}).map(f => dir + '/' + f);
-
-		// shuffle(images);
-
+function loadDirectory(dir) {
+	currentPath = rootPath + dir;
+	loadFiles(currentPath).then(loadedImages => {
+		console.log(loadedImages);
+		images = loadedImages;
 		remain = resetRemaining(images.length);
 		history = [];
-
 		swap();
 	});
 }
@@ -114,7 +102,8 @@ ipcRenderer.on('load', function(event, arg) {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 	// console.log(arg);
-	loadFiles(arg + IMAGE_ROOT);
+	rootPath = arg;
+	loadDirectory(IMAGE_ROOT);
 });
 
 ipcRenderer.on('message', function(event, arg) {

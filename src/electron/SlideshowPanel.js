@@ -1,9 +1,11 @@
 
 
 const sizeOf = require('image-size');
-const { getDrawCoordinates, getSingleImage } = require(__dirname + '/Images.js'); 
+const { getDrawCoordinates, getSingleImage } = require(__dirname + '/Images.js');
 
-function mountPortraitImages(src, coords, remainIndex, remain, images) {
+const workCanvas = document.createElement('canvas');
+
+function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images) {
 
 	const imgIndex = remain[remainIndex];
 
@@ -18,7 +20,7 @@ function mountPortraitImages(src, coords, remainIndex, remain, images) {
 			if (candidateIdx < 0 || candidateIdx >= remain.length || candidateIdx === remainIndex) return resolve(getCandidate(lst, i + 1));
 			const candidateImgIdx = remain[candidateIdx];
 
-			const candidateSrc = images[candidateImgIdx];
+			const candidateSrc = rootPath + images[candidateImgIdx];
 			if (!candidateSrc) return resolve(getCandidate(lst, i + 1));
 			getDrawCoordinates(candidateSrc).then((candidateCoord) => {
 				// console.log(candidateCoord);
@@ -54,10 +56,9 @@ function mountPortraitImages(src, coords, remainIndex, remain, images) {
 		});
 
 		return Promise.all(allLoaded).then((res) => {
-			const imCanvas = document.createElement('canvas');
-			imCanvas.width = canvas.width;
-			imCanvas.height = canvas.height;
-			const imCtx = imCanvas.getContext("2d");
+			workCanvas.width = canvas.width;
+			workCanvas.height = canvas.height;
+			const imCtx = workCanvas.getContext("2d");
 			imCtx.fillStyle = 'black';
 			imCtx.globalAlpha = 1;
 			imCtx.fillRect(0, 0, canvas.width, canvas.height);
@@ -66,9 +67,9 @@ function mountPortraitImages(src, coords, remainIndex, remain, images) {
 				carryCtx.drawImage(im, ...(Object.values(imgList[i].coords.coords)));
 
 				return carryCtx;
-			}, imCtx);//.getImageData(0, 0, imCanvas.width, imCanvas.height);
+			}, imCtx);//.getImageData(0, 0, workCanvas.width, workCanvas.height);
 
-			return getSingleImage(imCanvas.toDataURL());
+			return getSingleImage(workCanvas.toDataURL());
 		}).then((finalImg) => {
 			return {
 				img: finalImg,
@@ -81,31 +82,30 @@ function mountPortraitImages(src, coords, remainIndex, remain, images) {
 
 
 
-function getSlideshowPanel(remain, images) {
+function getSlideshowPanel(rootPath, remain, images) {
 
 
 	const remainIndex = Math.floor(Math.random() * (remain.length));
 	const imgIndex = remain[remainIndex];
 
-	const src = images[imgIndex];
+	const src = rootPath + images[imgIndex];
 	const sz = sizeOf(src);
 
 	return getDrawCoordinates(src).then((coords) => {
 		// console.log(coords.w, canvas.width);
 		//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
-		if (coords.coords.w < canvas.width) return mountPortraitImages(src, coords, remainIndex, remain, images);
+		if (coords.coords.w < canvas.width) return mountPortraitImages(rootPath, src, coords, remainIndex, remain, images);
 
 		return getSingleImage(src, coords.orientation).then((im) => {
-			const imCanvas = document.createElement('canvas');
-			imCanvas.width = canvas.width;
-			imCanvas.height = canvas.height;
-			const imCtx = imCanvas.getContext("2d");
+			workCanvas.width = canvas.width;
+			workCanvas.height = canvas.height;
+			const imCtx = workCanvas.getContext("2d");
 			imCtx.fillStyle = 'black';
 			imCtx.globalAlpha = 1;
 			imCtx.fillRect(0, 0, canvas.width, canvas.height);
 			imCtx.drawImage(im, ...(Object.values(coords.coords)));
 			// return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
-			return getSingleImage(imCanvas.toDataURL()).then((finalImg) => {
+			return getSingleImage(workCanvas.toDataURL()).then((finalImg) => {
 				return {
 					img: finalImg,
 					index: [imgIndex],

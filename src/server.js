@@ -40,15 +40,26 @@ module.exports = function() {
 		res.send(html);
 	});
 
-	io.on('connection', (socket) => {
-		console.log('ioooooooo');
-		this.onMessage && this.onMessage("C'est ty pas io yenk un peu");
-	});
+	this.setMessageCallback = (cb) => {
+		this.onMessage = cb;
+	};
 
-	app.get('/message', (req, res) => {
-		this.onMessage && this.onMessage('test yo');
-		res.send("c'est boooooo");
+	io.on('connection', (socket) => {
+
+		this.onMessage && this.onMessage('socket-connect');
+
+		socket.on('message', (msg) => {
+			this.onMessage && this.onMessage(msg);
+		});
+
 	});
+	
+
+	// app.get('/message', (req, res) => {
+	// 	console.log(req);
+	// 	this.onMessage && this.onMessage('test yo');
+	// 	// res.send("c'est boooooo");
+	// });
 
 }
 
