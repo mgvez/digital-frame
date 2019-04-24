@@ -8,7 +8,7 @@ function loadFiles(rootPath, dir = '') {
 		fs.readdir(rootPath + dir, (err, rawFiles) => {
 			if (err || !rawFiles) return resolve();
 			const files = rawFiles.map(f => dir + '/' + f);
-			console.log(files);
+			// console.log(files);
 			
 			//all images in current folder
 			const images = files.filter(file => {

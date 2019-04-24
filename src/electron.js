@@ -1,6 +1,6 @@
 
 
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path');
 
 let win;
@@ -67,6 +67,14 @@ module.exports = function(server) {
 		if (win === null) {
 			createWindow();
 		}
+	});
+
+	let lastTime = new Date();
+	ipcMain.on('slide', (event, arg) => {
+		const now = new Date();
+		const duration = now - lastTime;
+		console.log(duration);
+		lastTime = now;
 	});
 
 	this.stop = stop;

@@ -2,9 +2,11 @@ const { remote, ipcRenderer } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { TweenMax, Expo } = require('gsap');
-const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_SIZE } = require(__dirname + '/../../config.js');
+const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_SIZE, LOG_FILE } = require(__dirname + '/../../config.js');
 const { loadFiles } = require(__dirname + '/files.js');
 const getSlideshowPanel = require(__dirname + '/SlideshowPanel.js');
+
+const logger = require(__dirname + '/logger.js');
 
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext("2d");
@@ -55,6 +57,13 @@ function swap() {
 	// nextImg = getSlideshowPanel(currentIndex, draw);
 	// console.profile('get image');
 	getSlideshowPanel(currentPath, remain, images).then((res) => {
+		// ipcRenderer.send('slide', 'loaded');
+
+		logger.log({
+			level: 'info',
+			message: 'loaded ' + res.index.join(', '),
+		});
+
 		// console.profileEnd();
 		// console.log(res.index);
 		//remove displayed images from available images

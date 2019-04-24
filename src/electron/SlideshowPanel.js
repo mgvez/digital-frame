@@ -4,6 +4,7 @@ const sizeOf = require('image-size');
 const { getDrawCoordinates, getSingleImage } = require(__dirname + '/Images.js');
 
 const workCanvas = document.createElement('canvas');
+const logger = require(__dirname + '/logger.js');
 
 function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images) {
 
@@ -11,7 +12,6 @@ function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images)
 
 	let remainWidth = canvas.width - coords.coords.w;
 	// console.log('mount portrait', remain, coords.coords.w);
-
 	function getCandidate(lst, i) {
 		return new Promise((resolve) => {
 			// console.log(remain, coords.coords.w);
@@ -50,7 +50,10 @@ function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images)
 			im.coords.coords.x = curX;
 			return curX + margin + im.coords.coords.w;
 		}, margin / 2);
-
+		logger.log({
+			level: 'info',
+			message: 'loading multiple',
+		});
 		const allLoaded = imgList.map((imDef) => {
 			return getSingleImage(imDef.src, imDef.coords.orientation);
 		});
@@ -68,7 +71,10 @@ function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images)
 
 				return carryCtx;
 			}, imCtx);//.getImageData(0, 0, workCanvas.width, workCanvas.height);
-
+			logger.log({
+				level: 'info',
+				message: 'final multiple',
+			});
 			return getSingleImage(workCanvas.toDataURL());
 		}).then((finalImg) => {
 			return {
@@ -94,9 +100,19 @@ function getSlideshowPanel(rootPath, remain, images) {
 	return getDrawCoordinates(src).then((coords) => {
 		// console.log(coords.w, canvas.width);
 		//if image is so small that two of the same dimension would fit the canvas, attemps to mount more than one image side to side
-		if (coords.coords.w < canvas.width) return mountPortraitImages(rootPath, src, coords, remainIndex, remain, images);
-
+		logger.log({
+			level: 'info',
+			message: 'getting ' + images[imgIndex],
+		});
+		if (coords.coords.w < canvas.width) {
+			return mountPortraitImages(rootPath, src, coords, remainIndex, remain, images);
+		}
+		
 		return getSingleImage(src, coords.orientation).then((im) => {
+			logger.log({
+				level: 'info',
+				message: 'drawing ' + src,
+			});
 			workCanvas.width = canvas.width;
 			workCanvas.height = canvas.height;
 			const imCtx = workCanvas.getContext("2d");
@@ -105,6 +121,10 @@ function getSlideshowPanel(rootPath, remain, images) {
 			imCtx.fillRect(0, 0, canvas.width, canvas.height);
 			imCtx.drawImage(im, ...(Object.values(coords.coords)));
 			// return imCtx.getImageData(0, 0, imCanvas.width, imCanvas.height);
+			logger.log({
+				level: 'info',
+				message: 'final ' + src,
+			});
 			return getSingleImage(workCanvas.toDataURL()).then((finalImg) => {
 				return {
 					img: finalImg,

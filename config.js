@@ -29,4 +29,6 @@ module.exports = {
 		
 	],
 
+	LOG_FILE: __dirname + '/../dframe-log.txt',
+
 }
