@@ -27,6 +27,10 @@ function draw(img) {
 
 	//no fillrect if new image covers old one
 	const props = { alpha: 0 };
+	logger.log({
+		level: 'info',
+		message: 'tweening',
+	});
 
 	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
@@ -37,8 +41,8 @@ function draw(img) {
 			// ctx.putImageData(imgData, 0, 0);
 		},
 		onComplete: () => {
-			ctx.globalAlpha = 1;
-			ctx.drawImage(img, 0, 0);
+			// ctx.globalAlpha = 1;
+			// ctx.drawImage(img, 0, 0);
 			// ctx.putImageData(imgData, 0, 0);
 			setSwap();
 		},
@@ -86,6 +90,10 @@ function swap() {
 }
 
 function setSwap() {
+	logger.log({
+		level: 'info',
+		message: 'setting timeout ' + images.length + 'imgs',
+	});
 	if (!images.length) return;
 	setTimeout(swap, SLIDESHOW_DURATION * 1000);
 }

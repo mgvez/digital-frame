@@ -70,9 +70,16 @@ function getImageRotated(img, orientation, sz) {
 module.exports = {
 
 	getDrawCoordinates(imgSrc) {
-		if (!imgSrc) return null;
+		if (!imgSrc) return Promise.resolve();
+		logger.log({
+			level: 'info',
+			message: 'getting coords ' + imgSrc,
+		});
 		const sz = sizeOf(imgSrc);
-
+		logger.log({
+			level: 'info',
+			message: 'sz ' + sz.width + 'x' + sz.height,
+		});
 		const stream = fs.createReadStream(imgSrc);
 		const onOrientation = getOrientation(stream);
 		return onOrientation.then((orientation) => {
