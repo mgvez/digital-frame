@@ -90,7 +90,10 @@ function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images)
 
 function getSlideshowPanel(rootPath, remain, images) {
 
-
+	logger.log({
+		level: 'info',
+		message: 'get panel...',
+	});
 	const remainIndex = Math.floor(Math.random() * (remain.length));
 	const imgIndex = remain[remainIndex];
 

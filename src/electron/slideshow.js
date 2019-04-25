@@ -51,12 +51,19 @@ function draw(img) {
 };
 
 function swap() {
-
+	logger.log({
+		level: 'info',
+		message: 'swap',
+	});
 	//finished seeing all the images. Reset
 	if (remain.length === 0) {
+		logger.log({
+			level: 'info',
+			message: 'reset...',
+		});
 		remain = resetRemaining(images.length);
 	}
-
+	
 	// console.log(currentIndex);
 	// nextImg = getSlideshowPanel(currentIndex, draw);
 	// console.profile('get image');
