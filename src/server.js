@@ -9,6 +9,7 @@ const ipfilter = require('express-ipfilter').IpFilter;
 const fs = require('fs');
 const helmet = require('helmet');
 const childProcess = require('child_process');
+const logger = require(__dirname + '/logger.js');
 
 const { HTTP_PORT, IP_WHITELIST } = require(__dirname + '/../config.js');
 
@@ -54,7 +55,10 @@ module.exports = function() {
 			switch(msg) {
 				case 'reboot':
 					// console.log(childProcess);
-					console.log(require("os").userInfo().username);
+					logger.log({
+						level: 'info',
+						message: require("os").userInfo().username,
+					});
 					// childProcess.exec('reboot now', function(error, stdout, stderr){ console.log(stdout); });
 					break;
 			}

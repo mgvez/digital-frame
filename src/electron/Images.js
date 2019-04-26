@@ -1,7 +1,7 @@
 
 const { getOrientation } = require('get-orientation');
 const sizeOf = require('image-size');
-const logger = require(__dirname + '/logger.js');
+const logger = require(__dirname + '/../logger.js');
 
 function getImageRotated(img, orientation, sz) {
 

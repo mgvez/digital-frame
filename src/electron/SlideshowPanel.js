@@ -4,7 +4,7 @@ const sizeOf = require('image-size');
 const { getDrawCoordinates, getSingleImage } = require(__dirname + '/Images.js');
 
 const workCanvas = document.createElement('canvas');
-const logger = require(__dirname + '/logger.js');
+const logger = require(__dirname + '/../logger.js');
 
 function mountPortraitImages(rootPath, src, coords, remainIndex, remain, images) {
 

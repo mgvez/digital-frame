@@ -6,7 +6,7 @@ const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_S
 const { loadFiles } = require(__dirname + '/files.js');
 const getSlideshowPanel = require(__dirname + '/SlideshowPanel.js');
 
-const logger = require(__dirname + '/logger.js');
+const logger = require(__dirname + '/../logger.js');
 
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext("2d");

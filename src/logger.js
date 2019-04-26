@@ -1,6 +1,7 @@
 
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
+const { LOG_FILE } = require(__dirname + '/../config.js');
 
 
 const logFormat = printf(({ level, message, label, timestamp }) => {
