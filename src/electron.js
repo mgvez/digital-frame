@@ -9,17 +9,21 @@ const isConsole = process.argv.includes('console');
 module.exports = function(server) {
 
 	const stop = () => {
-		if (win) win.webContents.send('message', 'stop');
-		win.close();
+		if (win) {
+			win.webContents.send('message', 'stop');
+			win.close();
+			win = null;
+		}
 	};
 
 	const start = () => {
-		createWindow();
-		if (win) win.webContents.send('message', 'start');
+		createWindow('start');
+		win.webContents.send('message', 'start');
 	};
 
-	function createWindow () {
-		console.log('creating electron window');
+	function createWindow (arg) {
+		if (win) return;
+		console.log('creating electron window ' + arg);
 		win = new BrowserWindow({ 
 			width: 1200,
 			height: 1000,
@@ -63,11 +67,11 @@ module.exports = function(server) {
 		// app.quit();
 	});
 	
-	app.on('activate', () => {
-		if (win === null) {
-			createWindow();
-		}
-	});
+	// app.on('activate', () => {
+	// 	if (win === null) {
+	// 		createWindow('activate');
+	// 	}
+	// });
 
 	let lastTime = new Date();
 	ipcMain.on('slide', (event, arg) => {

@@ -8,6 +8,7 @@ var path = require('path');
 const ipfilter = require('express-ipfilter').IpFilter;
 const fs = require('fs');
 const helmet = require('helmet');
+const childProcess = require('child_process');
 
 const { HTTP_PORT, IP_WHITELIST } = require(__dirname + '/../config.js');
 
@@ -49,6 +50,15 @@ module.exports = function() {
 		this.onMessage && this.onMessage('socket-connect');
 
 		socket.on('message', (msg) => {
+
+			switch(msg) {
+				case 'reboot':
+					// console.log(childProcess);
+					console.log(require("os").userInfo().username);
+					// childProcess.exec('reboot now', function(error, stdout, stderr){ console.log(stdout); });
+					break;
+			}
+
 			this.onMessage && this.onMessage(msg);
 		});
 

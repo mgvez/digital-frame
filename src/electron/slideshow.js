@@ -16,6 +16,8 @@ let remain;
 let history;
 let rootPath;
 let currentPath;
+let intervalId;
+let stopped = true;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
@@ -51,6 +53,8 @@ function draw(img) {
 };
 
 function swap() {
+	clearInterval(intervalId);
+
 	logger.log({
 		level: 'info',
 		message: 'swap',
@@ -68,8 +72,8 @@ function swap() {
 	// nextImg = getSlideshowPanel(currentIndex, draw);
 	// console.profile('get image');
 	getSlideshowPanel(currentPath, remain, images).then((res) => {
+		if (stopped) return;
 		// ipcRenderer.send('slide', 'loaded');
-
 		logger.log({
 			level: 'info',
 			message: 'loaded ' + res.index.join(', '),
@@ -93,6 +97,12 @@ function swap() {
 		// console.log(remain);
 		// console.log(history);
 		draw(res.img);
+	}).catch(e => {
+		logger.log({
+			level: 'info',
+			message: 'err ' + e.getMessage(),
+		});
+		setSwap();
 	});
 }
 
@@ -102,7 +112,7 @@ function setSwap() {
 		message: 'setting timeout ' + images.length + 'imgs',
 	});
 	if (!images.length) return;
-	setTimeout(swap, SLIDESHOW_DURATION * 1000);
+	intervalId = setInterval(swap, SLIDESHOW_DURATION * 1000);
 }
 
 function resetRemaining(n) {
@@ -120,6 +130,7 @@ function loadDirectory(dir) {
 }
 
 ipcRenderer.on('load', function(event, arg) {
+	stopped = false;
 	const container = document.getElementById('main');
 	container.appendChild(canvas);
 	canvas.width = window.innerWidth;
@@ -129,9 +140,17 @@ ipcRenderer.on('load', function(event, arg) {
 	loadDirectory(IMAGE_ROOT);
 });
 
-ipcRenderer.on('message', function(event, arg) {
+ipcRenderer.on('message', function(event, msg) {
 	console.log(event);
-	console.log(arg);
+	console.log(msg);
+	switch(msg) {
+		case 'stop':
+			stopped = true;
+			clearInterval(intervalId);
+			break;
+		default:
+			break;
+	}
 	
 });
 // 

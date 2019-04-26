@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-	<title>Hello World!</title>
+	<title>Vez d-frame</title>
 	<style>
 		body {
 			cursor: none;
@@ -26,12 +26,18 @@
 			height: 100%;
 		}
 	</style>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<script src="/socket.io/socket.io.js"></script>
 	
   </head>
   <body>
-	<button data-msg="start">start</button>
-	<button data-msg="stop">stop</button>
+	<div class="container">
+		<div class="col-md-12">
+			<button data-msg="start" class="btn btn-success">start</button>
+			<button data-msg="stop" class="btn btn-warning">stop</button>
+			<button data-msg="reboot" class="btn btn-danger">reboot</button>
+		</div>
+	</div>
 
 	<script>
 		const socket = io();
