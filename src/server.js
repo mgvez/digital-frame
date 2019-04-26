@@ -59,7 +59,7 @@ module.exports = function() {
 						level: 'info',
 						message: require("os").userInfo().username,
 					});
-					// childProcess.exec('reboot now', function(error, stdout, stderr){ console.log(stdout); });
+					childProcess.exec('reboot now', function(error, stdout, stderr){ console.log(stdout); });
 					break;
 			}
 
