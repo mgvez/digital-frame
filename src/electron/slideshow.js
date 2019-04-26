@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { TweenMax, Expo } = require('gsap');
 const { IMAGE_ROOT, SLIDESHOW_DURATION, SLIDESHOW_TRANSITION_DURATION, HISTORY_SIZE, LOG_FILE } = require(__dirname + '/../../config.js');
-const { loadFiles } = require(__dirname + '/files.js');
+const { loadFiles } = require(__dirname + '/../common/files.js');
 const getSlideshowPanel = require(__dirname + '/SlideshowPanel.js');
 
 const logger = require(__dirname + '/../logger.js');
@@ -73,7 +73,10 @@ function swap() {
 	// console.profile('get image');
 	getSlideshowPanel(currentPath, remain, images).then((res) => {
 		if (stopped) return;
-		// ipcRenderer.send('slide', 'loaded');
+		
+		//notify node process that a slide has sucessfully loaded
+		ipcRenderer.send('slide', 'loaded');
+
 		logger.log({
 			level: 'info',
 			message: 'loaded ' + res.index.join(', '),
@@ -141,8 +144,8 @@ ipcRenderer.on('load', function(event, arg) {
 });
 
 ipcRenderer.on('message', function(event, msg) {
-	console.log(event);
-	console.log(msg);
+	// console.log(event);
+	// console.log(msg);
 	switch(msg) {
 		case 'stop':
 			stopped = true;

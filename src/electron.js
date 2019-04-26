@@ -3,22 +3,39 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path');
 
+const { SLIDESHOW_DURATION } = require(__dirname + '/../config.js');
+
 let win;
 const isDev = process.argv.includes('dev');
 const isConsole = process.argv.includes('console');
+
+//if window does not notify for that long, we restart the process.
+const MAX_NO_RESPONSE = (SLIDESHOW_DURATION + 60) * 1000;
+
 module.exports = function(server) {
 
-	const stop = () => {
+	//interval that will run and restart the process if it did not notify for too long
+	let statusInterval;
+
+	function forceRestart() {
+		clearInterval(statusInterval);
+		stop();
+		setTimeout(start, 1000);
+	}
+
+	function stop() {
 		if (win) {
 			win.webContents.send('message', 'stop');
 			win.close();
 			win = null;
+			clearInterval(statusInterval);
 		}
 	};
 
-	const start = () => {
+	function start() {
 		createWindow('start');
 		win.webContents.send('message', 'start');
+		statusInterval = setInterval(forceRestart, MAX_NO_RESPONSE);
 	};
 
 	function createWindow (arg) {
@@ -79,6 +96,8 @@ module.exports = function(server) {
 		const duration = now - lastTime;
 		console.log(duration);
 		lastTime = now;
+		clearInterval(statusInterval);
+		statusInterval = setInterval(forceRestart, MAX_NO_RESPONSE);
 	});
 
 	this.stop = stop;

@@ -4,7 +4,7 @@ module.exports = {
 	FRAME_WIDTH: 3840,
 	FRAME_HEIGHT: 2160,
 
-	SLIDESHOW_DURATION: 2,//seconds
+	SLIDESHOW_DURATION: 20,//seconds
 	SLIDESHOW_TRANSITION_DURATION: 3,//seconds
 
 	HISTORY_SIZE: 50,
@@ -30,5 +30,5 @@ module.exports = {
 	],
 
 	LOG_FILE: __dirname + '/../dframe-log.txt',
-
+	LOG_LEVEL: 'error', //'info',
 }

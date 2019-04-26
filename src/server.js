@@ -37,6 +37,7 @@ module.exports = function() {
 
 	app.use('/static', express.static(__dirname + '/../static'));
 
+	//serve a page so that devices on the network can control the slideshow
 	app.get('/', function(req, res) {
 		const html = fs.readFileSync(path.resolve(__dirname + '/server/index.html'), { encoding: 'utf8' });
 		res.send(html);
@@ -50,15 +51,12 @@ module.exports = function() {
 
 		this.onMessage && this.onMessage('socket-connect');
 
+		//receive message from remote app, controlling the slideshow.
 		socket.on('message', (msg) => {
 
 			switch(msg) {
 				case 'reboot':
 					// console.log(childProcess);
-					logger.log({
-						level: 'info',
-						message: require("os").userInfo().username,
-					});
 					childProcess.exec('sudo reboot now', function(error, stdout, stderr){ 
 						logger.log({
 							level: 'info',
@@ -72,13 +70,6 @@ module.exports = function() {
 		});
 
 	});
-	
-
-	// app.get('/message', (req, res) => {
-	// 	console.log(req);
-	// 	this.onMessage && this.onMessage('test yo');
-	// 	// res.send("c'est boooooo");
-	// });
 
 }
 

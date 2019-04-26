@@ -38,6 +38,33 @@ function loadFiles(rootPath, dir = '') {
 
 }
 
+function getDirectoryTree(rootPath, dir = '') {
+	return new Promise(resolve => {
+		fs.readdir(rootPath + dir, (err, rawFiles) => {
+			if (err || !rawFiles) return resolve();
+			const files = rawFiles.map(f => dir + '/' + f);
+
+			//get all folders
+			const subdirectories = files.map((subDir) => {
+				const ext = path.extname(subDir).toLowerCase();
+				//if extension, not a folder
+				if (ext) return false;
+				return getDirectoryTree(rootPath, subDir);
+			}).filter(Boolean);
+
+			Promise.all(subdirectories).then(r => {
+				resolve(r.filter(Boolean).reduce((all, sub) => {
+					return all.concat(sub);
+				}, images));
+			}).catch(e => {
+				console.log(e);
+			});
+
+		});
+	});
+}
+
 module.exports = {
 	loadFiles,
+	getDirectoryTree,
 };

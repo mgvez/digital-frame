@@ -32,10 +32,12 @@
   </head>
   <body>
 	<div class="container">
-		<div class="col-md-12">
-			<button data-msg="start" class="btn btn-success">start</button>
-			<button data-msg="stop" class="btn btn-warning">stop</button>
-			<button data-msg="reboot" class="btn btn-danger">reboot</button>
+		<div class="row">
+			<div class="col">
+				<button data-msg="start" class="btn btn-success">start</button>
+				<button data-msg="stop" class="btn btn-warning">stop</button>
+				<button data-msg="reboot" class="btn btn-danger">reboot</button>
+			</div>
 		</div>
 	</div>
 
@@ -55,6 +57,8 @@
 		btns.forEach(btn => {
 			btn.addEventListener('click', sendMessage);
 		});
+
+
 	</script>
   </body>
 </html>
