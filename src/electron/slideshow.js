@@ -19,6 +19,7 @@ let currentPath;
 let intervalId;
 let stopped = true;
 let hasChangedDirectory = false;
+let tween;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
@@ -35,7 +36,7 @@ function draw(img) {
 		message: 'tweening',
 	});
 
-	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
+	tween = TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
 		onUpdate: () => {
 			if (stopped) return;
@@ -50,7 +51,7 @@ function draw(img) {
 
 };
 
-function swap() {
+function swap(fromLoad) {
 	clearInterval(intervalId);
 
 	logger.log({
@@ -74,8 +75,10 @@ function swap() {
 		//in case we changed directory while fecthing a new slide
 		if (hasChangedDirectory) {
 			hasChangedDirectory = false;
-			setSwap();
-			return;
+			if (fromLoad !== true) {
+				swap();
+				return;
+			}
 		}
 		//notify node process that a slide has sucessfully loaded
 		ipcRenderer.send('slide', 'loaded');
@@ -134,7 +137,7 @@ function loadDirectory(dir) {
 		images = loadedImages;
 		remain = resetRemaining(images.length);
 		history = [];
-		swap();
+		swap(true);
 	});
 }
 
@@ -159,6 +162,7 @@ ipcRenderer.on('message', function(event, msg, data) {
 			break;
 		case 'changedir':
 			clearInterval(intervalId);
+			if (tween) tween.kill();
 			hasChangedDirectory = true;
 			loadDirectory(IMAGE_ROOT + data);
 			break;
