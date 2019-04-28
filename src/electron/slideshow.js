@@ -18,6 +18,7 @@ let rootPath;
 let currentPath;
 let intervalId;
 let stopped = true;
+let hasChangedDirectory = false;
 
 window.addEventListener('resize', () => {
 	canvas.width = window.innerWidth;
@@ -37,15 +38,12 @@ function draw(img) {
 	TweenMax.fromTo(props, SLIDESHOW_TRANSITION_DURATION, { alpha:0, ease: Expo.easeIn }, { 
 		alpha: 1, 
 		onUpdate: () => {
+			if (stopped) return;
 			//console.log(props.alpha);
 			ctx.globalAlpha = props.alpha;
 			ctx.drawImage(img, 0, 0);
-			// ctx.putImageData(imgData, 0, 0);
 		},
 		onComplete: () => {
-			// ctx.globalAlpha = 1;
-			// ctx.drawImage(img, 0, 0);
-			// ctx.putImageData(imgData, 0, 0);
 			setSwap();
 		},
 	});
@@ -73,7 +71,11 @@ function swap() {
 	// console.profile('get image');
 	getSlideshowPanel(currentPath, remain, images).then((res) => {
 		if (stopped) return;
-		
+		//in case we changed directory while fecthing a new slide
+		if (hasChangedDirectory) {
+			hasChangedDirectory = false;
+			return;
+		}
 		//notify node process that a slide has sucessfully loaded
 		ipcRenderer.send('slide', 'loaded');
 
@@ -110,6 +112,9 @@ function swap() {
 }
 
 function setSwap() {
+	if (stopped) return;
+	clearInterval(intervalId);
+
 	logger.log({
 		level: 'info',
 		message: 'setting timeout ' + images.length + 'imgs',
@@ -143,13 +148,18 @@ ipcRenderer.on('load', function(event, arg) {
 	loadDirectory(IMAGE_ROOT);
 });
 
-ipcRenderer.on('message', function(event, msg) {
-	// console.log(event);
-	// console.log(msg);
+ipcRenderer.on('message', function(event, msg, data) {
+	console.log(msg + ' IN SLIDESHOW');
+	console.log(data);
 	switch(msg) {
 		case 'stop':
 			stopped = true;
 			clearInterval(intervalId);
+			break;
+		case 'changedir':
+			clearInterval(intervalId);
+			hasChangedDirectory = true;
+			loadDirectory(IMAGE_ROOT + data);
 			break;
 		default:
 			break;

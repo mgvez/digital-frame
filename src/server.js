@@ -11,7 +11,13 @@ const helmet = require('helmet');
 const childProcess = require('child_process');
 const logger = require(__dirname + '/logger.js');
 
-const { HTTP_PORT, IP_WHITELIST } = require(__dirname + '/../config.js');
+const browserify = require('browserify');
+
+
+const { getDirectoryTree } = require(__dirname + '/common/files.js');
+
+
+const { HTTP_PORT, IP_WHITELIST, IMAGE_ROOT } = require(__dirname + '/../config.js');
 
 module.exports = function() {
 	console.log('starting server...');
@@ -35,12 +41,29 @@ module.exports = function() {
 
 	app.use(helmet());
 
-	app.use('/static', express.static(__dirname + '/../static'));
 
 	//serve a page so that devices on the network can control the slideshow
 	app.get('/', function(req, res) {
 		const html = fs.readFileSync(path.resolve(__dirname + '/server/index.html'), { encoding: 'utf8' });
 		res.send(html);
+	});
+
+	app.get('/static/main.js', (req, res, next) => {
+		const writer = fs.createWriteStream(__dirname + '/../static/main.js');
+
+		const builder = browserify();
+		builder.add(__dirname + '/server/app/Main.js');
+		builder.bundle().on('error', next).pipe(writer.on('finish', next));
+	});
+	app.use('/static', express.static(__dirname + '/../static'));
+
+
+	app.get('/getTree', function(req, res) {
+
+		getDirectoryTree(__dirname + '/..' + IMAGE_ROOT).then((tree) => {
+			// console.log(tree);
+			res.send(tree);
+		});
 	});
 
 	this.setMessageCallback = (cb) => {
@@ -52,6 +75,12 @@ module.exports = function() {
 		this.onMessage && this.onMessage('socket-connect');
 
 		//receive message from remote app, controlling the slideshow.
+
+		socket.on('changedir', (data) => {
+			// console.log(data);
+			this.onMessage && this.onMessage('changedir', data);
+		});
+
 		socket.on('message', (msg) => {
 
 			switch(msg) {
@@ -72,5 +101,3 @@ module.exports = function() {
 	});
 
 }
-
-

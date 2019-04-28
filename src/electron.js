@@ -19,6 +19,7 @@ module.exports = function(server) {
 
 	function forceRestart() {
 		clearInterval(statusInterval);
+		if (isDev) return;
 		stop();
 		setTimeout(start, 1000);
 	}
@@ -60,7 +61,7 @@ module.exports = function(server) {
 			win.webContents.send('load', app.getAppPath());
 		});
 	
-		server.setMessageCallback((message) => {
+		server.setMessageCallback((message, data = null) => {
 			switch (message) {
 				case 'start':
 					start();
@@ -69,7 +70,8 @@ module.exports = function(server) {
 					stop();
 					break;
 				default:
-					win.webContents.send('message', message);
+					// console.log('sending custom message');
+					win.webContents.send('message', message, data);
 			};
 		});
 	

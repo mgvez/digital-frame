@@ -4,28 +4,7 @@
   <head>
     <meta charset="UTF-8">
 	<title>Vez d-frame</title>
-	<style>
-		body {
-			cursor: none;
-			overflow: hidden;
-			width: 100%;
-			height: 100%;
-			cursor: none;
-			-moz-user-select: none;
-			-khtml-user-select: none;
-			-webkit-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
-			margin: 0;
-			padding: 0;
-			background: black;
-			color: white;
-		}
-		#main, canvas {
-			width: 100%;
-			height: 100%;
-		}
-	</style>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<script src="/socket.io/socket.io.js"></script>
 	
@@ -37,28 +16,19 @@
 				<button data-msg="start" class="btn btn-success">start</button>
 				<button data-msg="stop" class="btn btn-warning">stop</button>
 				<button data-msg="reboot" class="btn btn-danger">reboot</button>
+				<button data-gettree class="btn btn-success">fetch folders</button>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<h2>Folders</h2>
+				<ul data-tree class="list-group"></ul>
 			</div>
 		</div>
 	</div>
 
-	<script>
-		const socket = io();
-		console.log('loaded');
-		function sendMessage(e) {
-			const clicked = e.currentTarget;
-			const msg = clicked.dataset.msg;
-			console.log(msg);
-			socket.emit('message', msg, (answer) => {
-				console.log(answer);
-			});
-		}
+	<script src="/static/main.js"></script>
 
-		const btns = document.querySelectorAll('[data-msg]');
-		btns.forEach(btn => {
-			btn.addEventListener('click', sendMessage);
-		});
-
-
-	</script>
   </body>
 </html>
