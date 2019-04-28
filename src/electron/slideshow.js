@@ -74,6 +74,7 @@ function swap() {
 		//in case we changed directory while fecthing a new slide
 		if (hasChangedDirectory) {
 			hasChangedDirectory = false;
+			setSwap();
 			return;
 		}
 		//notify node process that a slide has sucessfully loaded
