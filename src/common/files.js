@@ -18,6 +18,8 @@ function loadFiles(rootPath, dir = '') {
 
 			//get all folders
 			const subdirectories = files.map((candidate) => {
+				const ext = path.extname(file).toLowerCase();
+				if (ext) return false;
 				const stats = fs.statSync(rootPath + candidate);
 				if (!stats.isDirectory()) return false;
 				return loadFiles(rootPath, candidate);
