@@ -1,5 +1,6 @@
 
 const cron = require('node-cron');
+const { exec } = require('child_process');
 const findDevices = require('local-devices');
 const { POWER_TIME, GEOFENCING_DEVICES } = require(__dirname + '/../config.js');
 
