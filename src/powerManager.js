@@ -12,6 +12,7 @@ let isSomeoneHome = true;
 function turnOn() {
 	if (!isOn && electronApp) electronApp.start();
 	isOn = true;
+	console.log('ON');
 	//cec turn on
 	exec('echo "on 0" | cec-client -s -d 1');
 
@@ -20,6 +21,7 @@ function turnOn() {
 function turnOff() {
 	isOn = false;
 	if (electronApp) electronApp.stop();
+	console.log('OFF');
 	//cec turn off
 	exec('echo "standby 0" | cec-client -s -d 1');
 }
