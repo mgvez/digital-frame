@@ -11,9 +11,9 @@ let isScheduledOn = true;
 let isSomeoneHome = true;
 
 function turnOn() {
+	console.log('ON');
 	if (!isOn && electronApp) electronApp.start();
 	isOn = true;
-	console.log('ON');
 	//cec turn on
 	exec('echo "on 0" | cec-client -s -d 1');
 
