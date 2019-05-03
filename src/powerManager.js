@@ -98,6 +98,7 @@ function registerCron() {
 		cron.schedule(`* ${minuteOff} ${hourOff} * ${day}`, turnOffScheduled);
 
 		if (nowDay === day) {
+			console.log(`now:${nowHour}, on:${hourOn}, off:${hourOff}`);
 			if (nowHour < hourOn || nowHour > hourOff || (nowHour === hourOn && nowMinute <= minuteOn) || (nowHour === hourOff && nowMinute >= minuteOff)) {
 				turnOffScheduled();
 			}
