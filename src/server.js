@@ -87,18 +87,17 @@ module.exports = function() {
 			// console.log(data);
 			this.onMessage && this.onMessage('changedir', data);
 		});
-		socket.on('start', () => {
-			// console.log(data);
-			this.onStart && this.onStart();
-		});
-		socket.on('stop', () => {
-			// console.log(data);
-			this.onStop && this.onStop();
-		});
+		
 
 		socket.on('message', (msg) => {
 
 			switch(msg) {
+				case 'start':
+					this.onStart && this.onStart();
+					break;
+				case 'stop':
+					this.onStop && this.onStop();
+					break;
 				case 'reboot':
 					// console.log(childProcess);
 					childProcess.exec('sudo reboot now', function(error, stdout, stderr){ 
