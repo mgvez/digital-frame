@@ -90,7 +90,7 @@ module.exports = function() {
 		
 
 		socket.on('message', (msg) => {
-			console.log(msg);
+			console.log('msg ' + msg);
 			switch(msg) {
 				case 'start':
 					this.onStart && this.onStart();
