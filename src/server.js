@@ -107,9 +107,11 @@ module.exports = function() {
 						});
 					});
 					break;
+				default:
+					this.onMessage && this.onMessage(msg);
+					
 			}
 
-			this.onMessage && this.onMessage(msg);
 		});
 
 	});
