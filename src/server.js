@@ -70,6 +70,13 @@ module.exports = function() {
 		this.onMessage = cb;
 	};
 
+	this.setStopCallback = (cb) => {
+		this.onStop = cb;
+	};
+	this.setStartCallback = (cb) => {
+		this.onStart = cb;
+	};
+
 	io.on('connection', (socket) => {
 
 		this.onMessage && this.onMessage('socket-connect');
@@ -79,6 +86,14 @@ module.exports = function() {
 		socket.on('changedir', (data) => {
 			// console.log(data);
 			this.onMessage && this.onMessage('changedir', data);
+		});
+		socket.on('start', () => {
+			// console.log(data);
+			this.onStart && this.onStart();
+		});
+		socket.on('stop', () => {
+			// console.log(data);
+			this.onStop && this.onStop();
 		});
 
 		socket.on('message', (msg) => {

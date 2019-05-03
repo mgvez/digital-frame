@@ -1,15 +1,99 @@
 
 const cron = require('node-cron');
+const findDevices = require('local-devices');
 const { POWER_TIME, GEOFENCING_DEVICES } = require(__dirname + '/../config.js');
 
 let server;
 let electronApp;
+let isOn = true;
+let isScheduledOn = true;
+let isSomeoneHome = true;
+
+function turnOn() {
+	if (!isOn && electronApp) electronApp.start();
+	isOn = true;
+}
+
+function turnOff() {
+	isOn = false;
+	if (electronApp) electronApp.stop();
+}
+
+function turnOnScheduled() {
+	isScheduledOn = true;
+	if (isSomeoneHome) turnOn();
+}
+
+function turnOffScheduled() {
+	isScheduledOn = false;
+	turnOff();
+}
+
+function turnOffGeofence() {
+	turnOff();
+}
+
+function turnOnGeofence() {
+	if (isScheduledOn) turnOn();
+}
+
+function forceOn() {
+	isScheduledOn = true;
+	this.turnOn();
+}
+
+function forceOff() {
+	isScheduledOn = false;
+	this.turnOff();
+}
+
+function geoFence() {
+
+	if (!GEOFENCING_DEVICES || GEOFENCING_DEVICES.length === 0) return;
+
+	findDevices().then(devices => {
+		const hasOne = devices.reduce((carry, device) => {
+			return carry || ~GEOFENCING_DEVICES.indexOf(device.mac);
+		}, false);
+		console.log(devices);
+		console.log(hasOne);
+
+		if (!hasOne && isSomeoneHome) {
+			isSomeoneHome = false;
+			turnOffGeofence();
+		} else if (hasOne && !isSomeoneHome) {
+			isSomeoneHome = true;
+			turnOnGeofence();
+		}
+
+	});
+}
 
 function registerCron() {
+	const now = new Date();
+	const nowDay = now.getDay();
+	const nowMinute = now.getMinutes();
+	const nowHour = now.getHours();
+
 	POWER_TIME.forEach((times, day) => {
-		const [ turnOn, turnOff ] = times;
-		console.log(turnOn);
+		const [ timeOn, timeOff ] = times;
+		// console.log(turnOn);
+		const [ hourOn, minuteOn ] = timeOn.split(':').map(Number);
+		const [ hourOff, minuteOff ] = timeOff.split(':').map(Number);
+		// console.log(hourOn, minuteOn, hourOff, minuteOff);
+		cron.schedule(`* ${minuteOn} ${hourOn} * ${day}`, turnOnScheduled);
+		cron.schedule(`* ${minuteOff} ${hourOff} * ${day}`, turnOffScheduled);
+
+		if (nowDay === day) {
+			if (nowHour < hourOn || nowHour > hourOff || (nowHour === hourOn && nowMinute <= minuteOn) || (nowHour === hourOff && nowMinute >= minuteOff)) {
+				turnOffScheduled();
+			}
+		}
+
 	});
+	cron.schedule(`* * * * *`, geoFence);
+	geoFence();
+
 }
 
 
@@ -18,5 +102,8 @@ module.exports = {
 		server = s;
 		electronApp = e;
 		registerCron();
+
+		server.setStartCallback(forceOn);
+		server.setStopCallback(forceOff);
 	}
 };

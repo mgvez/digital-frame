@@ -63,12 +63,12 @@ module.exports = function(server) {
 	
 		server.setMessageCallback((message, data = null) => {
 			switch (message) {
-				case 'start':
-					start();
-					break;
-				case 'stop':
-					stop();
-					break;
+				// case 'start':
+				// 	start();
+				// 	break;
+				// case 'stop':
+				// 	stop();
+				// 	break;
 				default:
 					// console.log('sending custom message');
 					win.webContents.send('message', message, data);
