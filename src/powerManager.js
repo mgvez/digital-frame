@@ -34,10 +34,13 @@ function turnOnScheduled() {
 
 function turnOffScheduled() {
 	isScheduledOn = false;
+	console.log('OFF scheduled');
 	turnOff();
 }
 
 function turnOffGeofence() {
+	console.log('OFF geofence');
+
 	turnOff();
 }
 
@@ -52,6 +55,8 @@ function forceOn() {
 
 function forceOff() {
 	isScheduledOn = false;
+	console.log('OFF requested');
+
 	this.turnOff();
 }
 
