@@ -15,16 +15,16 @@ function turnOn() {
 	if (!isOn && electronApp) electronApp.start();
 	isOn = true;
 	//cec turn on
-	exec('echo "on 0" | cec-client -s -d 1');
+	// exec('echo "on 0" | cec-client -s -d 1');
 
 }
 
 function turnOff() {
 	isOn = false;
-	if (electronApp) electronApp.stop();
 	console.log('OFF');
+	if (electronApp) electronApp.stop();
 	//cec turn off
-	exec('echo "standby 0" | cec-client -s -d 1');
+	// exec('echo "standby 0" | cec-client -s -d 1');
 }
 
 function turnOnScheduled() {
